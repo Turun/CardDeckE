@@ -7,8 +7,8 @@ public class Mechanics extends Thread
     boolean end = false;
     int[] deck1;
     int[] deck2;
-    int match;
-    int total;
+    long match;
+    long total;
     
     public Mechanics(int deckLength){
         this.deck1 = new int[deckLength];
@@ -62,7 +62,7 @@ public class Mechanics extends Thread
         return 0;
     }
     
-    public void setTotal(int total){this.total = total;}
-    public void setMatch(int match){this.match = match;}
+    public void setTotal(long total){this.total = total;}
+    public void setMatch(long match){this.match = match;}
     
 }

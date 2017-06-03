@@ -6,6 +6,8 @@ import java.awt.GridLayout;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowAdapter;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,6 +17,12 @@ import javax.swing.JTextField;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
 import javax.swing.SwingUtilities;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.IOException;
+
 
 public class GUI
 {
@@ -32,9 +40,11 @@ public class GUI
     
     Mechanics mech;
     
+    private static String filename = "./data.txt";
+    
     boolean running = false;
-    int total = 0;
-    int match = 0;
+    long total = 0;
+    long match = 0;
     double prob = 0;
     double e = 0;
     int deckSize = 52;
@@ -42,12 +52,13 @@ public class GUI
     public static void main(String[] args){GUI g = new GUI();}
     private GUI(){
         makeFrame();
-        
+        load();
     }
     
     private void makeFrame(){
         f = new JFrame("Getting e by mixing cards");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        f.addWindowListener(new WindowAdapter(){public void windowClosing(WindowEvent e){save();System.exit(1);}});
         f.setVisible(false);
         f.setResizable(false);
         
@@ -88,7 +99,7 @@ public class GUI
         
         
         JButton b;
-        JPanel buttons = new JPanel(new GridLayout(1,4,5,5));
+        JPanel buttons = new JPanel(new GridLayout(2,3,5,5));
         
         b = new JButton("Start");
         b.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){start();}});
@@ -104,6 +115,14 @@ public class GUI
         
         b = new JButton("Continue");
         b.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){cont();}});
+        buttons.add(b);
+        
+        b = new JButton("Save");
+        b.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){save();}});
+        buttons.add(b);
+        
+        b = new JButton("Load");
+        b.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){load();}});
         buttons.add(b);
         
         
@@ -137,8 +156,27 @@ public class GUI
         Lmatch.setText(String.valueOf(match));
         Lprob.setText(String.valueOf(prob));
         Le.setText(String.valueOf(e));
-        
-        numbers.paintImmediately(numbers.getBounds());
+    }
+    
+    private void load(){
+        reset();
+        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+            total = Integer.valueOf(br.readLine().split(":")[1]);
+            match = Integer.valueOf(br.readLine().split(":")[1]);
+        }catch(IOException | NumberFormatException e){
+            total = 1;
+            match = 1;
+        }
+        cont();
+    }
+    
+    private void save(){
+        String text = String.format("total:%d\nmatch:%d",total,match);
+        try(PrintWriter out = new PrintWriter(filename)){
+            out.print(text);
+        }catch(IOException e){
+            
+        }
     }
     
     private void cont(){
@@ -203,7 +241,7 @@ public class GUI
     private void setTimer(){
         t = new Timer();
         action = new TimerTask(){public void run(){update();}};
-        t.scheduleAtFixedRate(action,500L,500L);
+        t.scheduleAtFixedRate(action,70L,70L);
     }
     
     private void endTimer(){
@@ -216,6 +254,8 @@ public class GUI
     private void setDeckSize(){
         try{
             String in = jtf.getText().replace(" ","");
+            in = in.replace(",","");
+            in = in.replace(".","");
             deckSize = Integer.valueOf(in);
             jtf.setText(in);
         }catch(NumberFormatException ex){
